@@ -1,5 +1,4 @@
-# College Gallery Management System (Flask)
-
+# College Gallery Management System (Flask) | LIVE
 A complete gallery for your college: user auth, albums, photo uploads with thumbnails, tags, search, likes, comments, and admin role management.
 
 ## Quick Start
@@ -15,4 +14,5 @@ pip install -r requirements.txt
 
 # 3) Run the app
 python app.py
+
 
