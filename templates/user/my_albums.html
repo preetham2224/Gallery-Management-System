@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}My Albums • College Gallery{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <h2>My Albums</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+        <a href="{{ url_for('album_create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>Create New Album
+        </a>
+    </div>
+</div>
+
+<!-- Album Stats -->
+<div class="row mb-4 fade-in">
+    <div class="col-md-12">
+        <div class="stat-card text-center p-3">
+            <div class="stat-number">{{ total_albums }}</div>
+            <div class="stat-label">TOTAL ALBUMS</div>
+        </div>
+    </div>
+</div>
+
+{% if albums %}
+    <div class="row g-3">
+        {% for album in albums %}
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card shadow-sm h-100 hover-animate">
+                    <a href="{{ url_for('album_detail', album_id=album.id) }}" class="text-decoration-none text-dark">
+                        {% if album.photos %}
+                            <img class="album-cover" 
+                                 src="{{ url_for('static', filename='thumbs/' + album.photos[0].thumb_name()) }}" 
+                                 alt="{{ album.title }} cover">
+                        {% else %}
+                            <div class="album-cover bg-light d-flex align-items-center justify-content-center">
+                                <i class="bi bi-images text-muted display-4"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ album.title }}</h5>
+                            <p class="card-text small text-muted">{{ album.description|truncate(100) if album.description else 'No description' }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <span class="badge bg-secondary me-2">{{ album.visibility }}</span>
+                                    <small class="text-muted">
+                                        {{ album.photos|length }} photo{% if album.photos|length != 1 %}s{% endif %}
+                                        {% if album.videos|length > 0 %}, {{ album.videos|length }} video{% if album.videos|length != 1 %}s{% endif %}{% endif %}
+                                    </small>
+                                </div>
+                                
+                                {% if current_user.is_authenticated and (current_user.is_admin() or album.user_id == current_user.id) %}
+                                <form method="post" action="{{ url_for('delete_album', album_id=album.id) }}" 
+                                      onsubmit="return confirm('Are you sure you want to delete this album and all its contents? This action cannot be undone.');">
+                                    <button class="btn btn-outline-danger btn-sm">🗑</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                            
+                            <small class="text-muted mt-2 d-block">
+                                Created {{ album.created_at.strftime('%b %d, %Y') }}
+                            </small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    {% if total_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+                <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            
+            <li class="page-item disabled">
+                <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+            </li>
+            
+            {% if page < total_pages %}
+                <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5 fade-in">
+        <i class="bi bi-collection display-1 text-muted"></i>
+        <h4 class="text-muted mt-3">No albums yet</h4>
+        <p class="text-muted">Create your first album to organize your photos and videos</p>
+        <a href="{{ url_for('album_create') }}" class="btn btn-primary mt-2">
+            <i class="bi bi-plus-circle me-1"></i>Create Your First Album
+        </a>
+    </div>
+{% endif %}
+
+<style>
+    .album-cover {
+        height: 200px;
+        object-fit: cover;
+        width: 100%;
+    }
+    
+    .hover-animate {
+        transition: all 0.3s ease;
+    }
+    
+    .hover-animate:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}

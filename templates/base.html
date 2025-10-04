@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}NCE College Gallery{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    :fullscreen {
+      background-color: black;
+    }
+
+    :-webkit-full-screen {
+      background-color: black;
+    }
+
+    :-moz-full-screen {
+      background-color: black;
+    }
+
+    :-ms-fullscreen {
+      background-color: black;
+    }
+
+    /* Style for fullscreen image */
+    img:fullscreen {
+      object-fit: contain;
+    }
+
+    video:fullscreen {
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+  {% include "navbar.html" %}
+  <main class="container">
+    {% with msgs=get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <div class="mt-2">
+          {% for cat,msg in msgs %}
+            <div class="alert alert-{{cat}} alert-dismissible fade show">
+              <i class="bi {% if cat == 'success' %}bi-check-circle-fill{% elif cat == 'danger' %}bi-exclamation-triangle-fill{% elif cat == 'warning' %}bi-exclamation-circle-fill{% else %}bi-info-circle-fill{% endif %} me-2"></i>
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+  
+  <footer class="footer mt-auto py-4 bg-dark text-light">
+      <div class="container">
+          <div class="row">
+              <!-- Brand Section -->
+              <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                  <div class="d-flex align-items-center mb-3">
+                      <i class="bi bi-camera me-2 fs-3 text-primary"></i>
+                      <h5 class="mb-0 brand-text">NCE Gallery</h5>
+                  </div>
+                  <p class="mb-3">Showcasing the vibrant life and achievements of our college community through a comprehensive media collection.</p>
+                  <div class="social-links">
+                      <a href="#" class="text-light me-2"><i class="bi bi-facebook fs-5"></i></a>
+                      <a href="#" class="text-light me-2"><i class="bi bi-twitter fs-5"></i></a>
+                      <a href="#" class="text-light me-2"><i class="bi bi-instagram fs-5"></i></a>
+                      <a href="#" class="text-light"><i class="bi bi-linkedin fs-5"></i></a>
+                  </div>
+              </div>
+
+              <!-- Quick Links -->
+              <div class="col-lg-2 col-md-3 col-6 mb-4 mb-md-0">
+                  <h6 class="text-uppercase fw-bold mb-3 text-white">Explore</h6>
+                  <ul class="list-unstyled">
+                      <li class="mb-2"><a href="{{ url_for('index') }}" class="text-light text-decoration-none hover-primary">Home</a></li>
+                      <li class="mb-2"><a href="{{ url_for('albums_list') }}" class="text-light text-decoration-none hover-primary">Albums</a></li>
+                      <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-primary">Events</a></li>
+                      <li class="mb-2"><a href="#" class="text-light text-decoration-none hover-primary">Collections</a></li>
+                  </ul>
+              </div>
+
+              <!-- Account Links -->
+              <div class="col-lg-2 col-md-3 col-6 mb-4 mb-md-0">
+                  <h6 class="text-uppercase fw-bold mb-3 text-white">Account</h6>
+                  <ul class="list-unstyled">
+                      {% if current_user.is_authenticated %}
+                      <li class="mb-2"><a href="{{ url_for('user_dashboard') }}" class="text-light text-decoration-none hover-primary">Dashboard</a></li>
+                      <li class="mb-2"><a href="{{ url_for('profile') }}" class="text-light text-decoration-none hover-primary">Profile</a></li>
+                      <li class="mb-2"><a href="{{ url_for('my_uploads') }}" class="text-light text-decoration-none hover-primary">My Uploads</a></li>
+                      <li class="mb-2"><a href="{{ url_for('favorites') }}" class="text-light text-decoration-none hover-primary">Favorites</a></li>
+                      {% else %}
+                      <li class="mb-2"><a href="{{ url_for('login') }}" class="text-light text-decoration-none hover-primary">Login</a></li>
+                      <li class="mb-2"><a href="{{ url_for('register') }}" class="text-light text-decoration-none hover-primary">Register</a></li>
+                      {% endif %}
+                  </ul>
+              </div>
+
+              <!-- Support & Contact -->
+              <div class="col-lg-4 col-md-6">
+                  <h6 class="text-uppercase fw-bold mb-3 text-white">Contact Info</h6>
+                  <ul class="list-unstyled">
+                      <li class="mb-2">
+                          <i class="bi bi-geo-alt me-2 text-primary"></i>
+                          <span>Navkis College of Engineering, Hassan</span>
+                      </li>
+                      <li class="mb-2">
+                          <i class="bi bi-envelope me-2 text-primary"></i>
+                          <a href="mailto:info@ncecollege.edu" class="text-light text-decoration-none">info@navkisedu.com</a>
+                      </li>
+                      <li class="mb-2">
+                          <i class="bi bi-phone me-2 text-primary"></i>
+                          <span>+91 9481450750</span>
+                      </li>
+                      <li class="mb-2">
+                          <i class="bi bi-clock me-2 text-primary"></i>
+                          <span>Mon - Sat : 9AM - 5PM</span>
+                      </li>
+                  </ul>
+              </div>
+          </div>
+
+          <hr class="my-4 bg-light opacity-50">
+
+          <!-- Bottom Section -->
+          <div class="row align-items-center">
+              <div class="col-md-6 text-center text-md-start">
+                  <p class="mb-0">&copy; 2025 Navkis College of Engineering. All rights reserved.</p>
+              </div>
+              <div class="col-md-6 text-center text-md-end">
+                  <ul class="list-inline mb-0">
+                      <li class="list-inline-item"><a href="#" class="text-light text-decoration-none hover-primary small">Privacy Policy</a></li>
+                      <li class="list-inline-item mx-2">•</li>
+                      <li class="list-inline-item"><a href="#" class="text-light text-decoration-none hover-primary small">Terms of Service</a></li>
+                      <li class="list-inline-item mx-2">•</li>
+                      <li class="list-inline-item"><a href="#" class="text-light text-decoration-none hover-primary small">Cookie Policy</a></li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+  </footer>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Simple image lazy loading
+    document.addEventListener("DOMContentLoaded", function() {
+      const lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+      
+      if ("IntersectionObserver" in window) {
+        let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              let lazyImage = entry.target;
+              lazyImage.src = lazyImage.dataset.src;
+              lazyImage.classList.remove("lazy");
+              lazyImageObserver.unobserve(lazyImage);
+            }
+          });
+        });
+        
+        lazyImages.forEach(function(lazyImage) {
+          lazyImageObserver.observe(lazyImage);
+        });
+      }
+    });
+
+    // Enhanced delete confirmation
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteForms = document.querySelectorAll('form[onsubmit*="confirm"]');
+        
+        deleteForms.forEach(form => {
+            form.onsubmit = function(e) {
+                e.preventDefault();
+                const message = this.getAttribute('onsubmit').match(/return confirm\('([^']+)'\)/)[1];
+                if (confirm(message)) {
+                    this.submit();
+                }
+            };
+        });
+    });
+  </script>
+</body>
+</html>

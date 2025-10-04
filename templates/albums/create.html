@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Create New Album • NCE Gallery{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="bg-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-folder-plus text-white fs-2"></i>
+                </div>
+                <h2 class="fw-bold">Create New Album</h2>
+                <p class="text-muted">Organize your photos and videos into beautiful collections</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="card-title mb-0">Album Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Title Field -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-semibold">
+                                <i class="bi bi-card-heading me-2 text-primary"></i>Album Title
+                            </label>
+                            {{ form.title(class="form-control form-control-lg py-3", placeholder="Enter album title") }}
+                            {% for e in form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ e }}</div>
+                            {% endfor %}
+                            <div class="form-text">Choose a descriptive title for your album</div>
+                        </div>
+
+                        <!-- Description Field -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">
+                                <i class="bi bi-text-paragraph me-2 text-primary"></i>Description
+                            </label>
+                            {{ form.description(class="form-control", rows="4", placeholder="Describe your album (optional)") }}
+                            <div class="form-text">Add a brief description of what this album contains</div>
+                        </div>
+
+                        <!-- Visibility Field -->
+                        <div class="mb-4">
+                            <label for="visibility" class="form-label fw-semibold">
+                                <i class="bi bi-eye me-2 text-primary"></i>Visibility
+                            </label>
+                            {{ form.visibility(class="form-select form-select-lg py-3") }}
+                            <div class="form-text">Control who can see this album</div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a href="{{ url_for('albums_list') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="bi bi-plus-circle me-2"></i>Create Album
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="card border-0 bg-light mt-4">
+                <div class="card-body">
+                    <h6 class="fw-semibold mb-3">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>Album Creation Tips
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Use descriptive titles for better organization</li>
+                        <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Add descriptions to help others understand your content</li>
+                        <li><i class="bi bi-check-circle text-success me-2"></i>Choose appropriate visibility settings for your needs</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #42a5f5;
+    box-shadow: 0 0 0 0.2rem rgba(66, 165, 245, 0.25);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

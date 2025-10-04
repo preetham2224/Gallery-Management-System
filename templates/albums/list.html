@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Albums • College Gallery{% endblock %}
+{% block content %}
+<h2>Albums</h2>
+
+{% if current_user.is_authenticated %}
+<div class="mb-4">
+    <a href="{{ url_for('album_create') }}" class="btn btn-primary">Create New Album</a>
+</div>
+{% endif %}
+
+<div class="row g-3 fade-in">
+  {% for album in albums.items %}
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card shadow-sm h-100">
+        {% set cover = album.photos[0] if album.photos else None %}
+        <a href="{{ url_for('album_detail', album_id=album.id) }}">
+          {% if cover %}
+            <img class="album-cover" src="{{ url_for('static', filename='thumbs/' + cover.thumb_name()) }}" alt="{{ album.title }} cover">
+          {% else %}
+            <img class="album-cover" src="https://placehold.co/800x600?text=No+Cover" alt="No cover image">
+          {% endif %}
+        </a>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title">{{ album.title }}</h5>
+          <p class="card-text small text-muted flex-grow-1">{{ album.description or '—' }}</p>
+          
+          <div class="d-flex justify-content-between align-items-center mt-auto">
+            <div>
+              <span class="badge bg-secondary me-2">{{ album.visibility }}</span>
+              <small class="text-muted">
+                {{ album.photos|length }} photo{% if album.photos|length != 1 %}s{% endif %}
+                {% if album.videos|length > 0 %}, {{ album.videos|length }} video{% if album.videos|length != 1 %}s{% endif %}{% endif %}
+              </small>
+            </div>
+            
+            {% if current_user.is_authenticated and (current_user.is_admin() or album.user_id == current_user.id) %}
+            <form method="post" action="{{ url_for('delete_album', album_id=album.id) }}" 
+                  onsubmit="return confirm('Are you sure you want to delete this album and all its contents? This action cannot be undone.');">
+                <button class="btn btn-outline-danger btn-sm">🗑</button>
+            </form>
+            {% endif %}
+          </div>
+          
+          <small class="text-muted mt-2">
+            By {{ album.owner.full_name }} • {{ album.created_at.strftime('%b %d, %Y') }}
+          </small>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+{% if albums.items|length == 0 %}
+<div class="text-center py-5">
+  <i class="bi bi-folder-x display-1 text-muted"></i>
+  <h4 class="text-muted mt-3">No albums found</h4>
+  {% if current_user.is_authenticated %}
+  <p class="text-muted">Create your first album to get started</p>
+  <a href="{{ url_for('album_create') }}" class="btn btn-primary">Create Album</a>
+  {% else %}
+  <p class="text-muted">Login to create albums</p>
+  {% endif %}
+</div>
+{% endif %}
+
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if albums.has_prev %}
+      <li class="page-item"><a class="page-link" href="?page={{ albums.prev_num }}">Previous</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Previous</span></li>
+    {% endif %}
+    
+    {% for page_num in albums.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+      {% if page_num %}
+        {% if page_num == albums.page %}
+          <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+        {% endif %}
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      {% endif %}
+    {% endfor %}
+    
+    {% if albums.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ albums.next_num }}">Next</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Home • NCE College Gallery{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <h1>Latest Uploads</h1>
+</div>
+{% if q %}
+    <p class="text-muted fade-in">Search results for: <strong>{{ q }}</strong></p>
+{% endif %}
+
+<div class="row g-3 fade-in">
+  {% for item in items %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card photo-card shadow-sm">
+        {% if item.__class__.__name__ == "Photo" %}
+          <a href="{{ url_for('photo_detail', photo_id=item.id) }}">
+            <img src="{{ url_for('static', filename='thumbs/' + item.thumb_name()) }}" class="card-img-top" alt="photo">
+          </a>
+        {% elif item.__class__.__name__ == "Video" %}
+          <a href="{{ url_for('video_detail', video_id=item.id) }}">
+            <video class="w-100" height="200" muted>
+              <source src="{{ url_for('static', filename='uploads/' + item.filename) }}" type="video/mp4">
+            </video>
+          </a>
+        {% endif %}
+        <div class="card-body">
+          <p class="card-text small mb-1">{{ item.caption or "&nbsp;"|safe }}</p>
+          <a class="small text-decoration-none" href="{{ url_for('album_detail', album_id=item.album_id) }}">
+            {% if item.__class__.__name__ == 'Photo' %}
+              {{ item.album.title }}
+            {% elif item.__class__.__name__ == 'Video' %}
+              {{ item.album.title }}
+            {% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+<nav class="mt-4">
+  <ul class="pagination">
+    {% if page > 1 %}
+      <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}&q={{ q }}">Previous</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Previous</span></li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+    </li>
+
+    {% if page < total_pages %}
+      <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}&q={{ q }}">Next</a></li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Next</span></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}

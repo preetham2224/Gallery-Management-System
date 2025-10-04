@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard • College Gallery{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Admin Dashboard</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">Manage Users</a>
+        <a href="{{ url_for('admin_settings') }}" class="btn btn-outline-secondary">Settings</a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white text-center p-3">
+            <h3>{{ total_users }}</h3>
+            <p class="mb-0">Total Users</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white text-center p-3">
+            <h3>{{ total_albums }}</h3>
+            <p class="mb-0">Total Albums</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white text-center p-3">
+            <h3>{{ total_photos }}</h3>
+            <p class="mb-0">Total Photos</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white text-center p-3">
+            <h3>{{ "%.2f"|format(total_storage / (1024*1024)) }} MB</h3>
+            <p class="mb-0">Storage Used</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recent Users</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                <div class="list-group list-group-flush">
+                    {% for user in recent_users %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ user.full_name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ user.email }}</small>
+                        </div>
+                        <span class="badge bg-secondary">{{ user.role }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">No users found.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Storage Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Original Images</span>
+                        <span>{{ "%.2f"|format(upload_size / (1024*1024)) }} MB</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        {% set upload_percent = (upload_size / total_storage * 100) if total_storage > 0 else 0 %}
+                        <div class="progress-bar" role="progressbar" style="width: {{ upload_percent }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between">
+                        <span>Thumbnails</span>
+                        <span>{{ "%.2f"|format(thumb_size / (1024*1024)) }} MB</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        {% set thumb_percent = (thumb_size / total_storage * 100) if total_storage > 0 else 0 %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ thumb_percent }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-primary">Manage User Roles</a>
+                    <a href="{{ url_for('album_create') }}" class="btn btn-outline-success">Create New Album</a>
+                    <a href="{{ url_for('photo_upload') }}" class="btn btn-outline-info">Upload Photos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Dashboard • NCE College Gallery{% endblock %}
+{% block content %}
+<h2 class="mb-3">My Dashboard</h2>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header">My Albums</div>
+      <div class="card-body">
+        {% if albums %}
+          <ul class="list-group">
+            {% for a in albums %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('album_detail', album_id=a.id) }}">{{ a.title }}</a>
+                <span class="badge bg-secondary">{{ a.visibility }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+          <a class="btn btn-outline-primary mt-3" href="{{ url_for('album_create') }}">Create Album</a>
+        {% else %}
+          <p>No albums yet. <a href="{{ url_for('album_create') }}">Create one</a>.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-header">Recent Uploads</div>
+      <div class="card-body">
+        <div class="row g-2">
+          {% for p in photos %}
+            <div class="col-4"><img class="img-fluid rounded" src="{{ url_for('static', filename='thumbs/' + p.thumb_name()) }}"></div>
+          {% else %}
+            <p class="mb-0">No uploads yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

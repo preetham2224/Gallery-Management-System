@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}My Favorites • College Gallery{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 fade-in">
+    <h2>My Favorites</h2>
+    <div class="btn-group">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Gallery
+        </a>
+    </div>
+</div>
+
+{% if items %}
+    <div class="row g-3">
+        {% for fav in items %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="card photo-card">
+                    {% if fav.type == 'photo' %}
+                        <a href="{{ url_for('photo_detail', photo_id=fav.item.id) }}">
+                            <img src="{{ url_for('static', filename='thumbs/' + fav.item.thumb_name()) }}" 
+                                 class="card-img-top" alt="{{ fav.item.caption or 'Photo' }}">
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('video_detail', video_id=fav.item.id) }}">
+                            <div class="position-relative">
+                                <video class="w-100" height="200" muted>
+                                    <source src="{{ url_for('static', filename='uploads/' + fav.item.filename) }}" type="video/mp4">
+                                </video>
+                                <div class="position-absolute top-0 start-0 m-1">
+                                    <span class="badge bg-dark">🎥 Video</span>
+                                </div>
+                            </div>
+                        </a>
+                    {% endif %}
+                    <div class="card-body">
+                        <p class="card-text small mb-1">{{ fav.item.caption or "&nbsp;"|safe }}</p>
+                        <small class="text-muted">
+                            Liked on {{ fav.liked_at.strftime('%b %d, %Y') }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    {% if total_pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page > 1 %}
+                <li class="page-item"><a class="page-link" href="?page={{ page - 1 }}">Previous</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+            
+            <li class="page-item disabled">
+                <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+            </li>
+            
+            {% if page < total_pages %}
+                <li class="page-item"><a class="page-link" href="?page={{ page + 1 }}">Next</a></li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <div class="text-center py-5 fade-in">
+        <i class="bi bi-heart display-1 text-muted"></i>
+        <h4 class="text-muted mt-3">No favorites yet</h4>
+        <p class="text-muted">Start liking photos and videos to see them here</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary mt-2">Browse Gallery</a>
+    </div>
+{% endif %}
+{% endblock %}

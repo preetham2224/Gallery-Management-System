@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard • College Gallery{% endblock %}
+{% block content %}
+<h2 class="mb-4 fade-in">My Dashboard</h2>
+
+<!-- Quick Stats Cards with Hover Animations -->
+<div class="row mb-4 fade-in">
+    <div class="col-md-3">
+        <div class="stat-card text-center p-3 hover-animate">
+            <div class="stat-number">{{ album_count }}</div>
+            <div class="stat-label">MY ALBUMS</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center p-3 hover-animate">
+            <div class="stat-number">{{ photo_count }}</div>
+            <div class="stat-label">MY PHOTOS</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center p-3 hover-animate">
+            <div class="stat-number">{{ video_count }}</div>
+            <div class="stat-label">MY VIDEOS</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card text-center p-3 hover-animate">
+            <div class="stat-number">{{ photo_count + video_count }}</div>
+            <div class="stat-label">TOTAL UPLOADS</div>
+        </div>
+    </div>
+</div>
+
+<div class="row fade-in">
+    <!-- First Column - My Albums and My Profile -->
+    <div class="col-md-6">
+        <!-- My Albums Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">My Albums</h5>
+                <a href="{{ url_for('album_create') }}" class="btn btn-sm btn-primary">Create New</a>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-4">
+                    <i class="bi bi-collection display-4 text-primary mb-3"></i>
+                    <h5>Your Photo & Video Collections</h5>
+                    <p class="text-muted">Organize your content into beautiful albums</p>
+                    <a href="{{ url_for('my_albums') }}" class="btn btn-primary hover-animate">
+                        <i class="bi bi-eye me-2"></i>View All Albums
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Profile Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">My Profile</h5>
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-primary text-white">Edit</a>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-4">
+                    <i class="bi bi-person-circle display-4 text-info mb-3"></i>
+                    <h5>Manage Your Profile</h5>
+                    <p class="text-muted">Update your personal information and preferences</p>
+                    <a href="{{ url_for('profile') }}" class="btn btn-info hover-animate">
+                        <i class="bi bi-person me-2"></i>View Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Column - Recent Uploads and Recently Liked -->
+    <div class="col-md-6">
+        <!-- Recent Uploads Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Recent Uploads</h5>
+                <div>
+                    <a href="{{ url_for('photo_upload') }}" class="btn btn-sm btn-success me-1">Upload Photo</a>
+                    <a href="{{ url_for('video_upload') }}" class="btn btn-sm btn-info">Upload Video</a>
+                </div>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-4">
+                    <i class="bi bi-cloud-arrow-up display-4 text-success mb-3"></i>
+                    <h5>View Your Recent Uploads</h5>
+                    <p class="text-muted">See all your recently uploaded photos and videos</p>
+                    <a href="{{ url_for('my_uploads') }}" class="btn btn-success hover-animate">
+                        <i class="bi bi-eye me-2"></i>View All Uploads
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recently Liked Card -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Recently Liked</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="py-4">
+                    <i class="bi bi-heart display-4 text-danger mb-3"></i>
+                    <h5>Your Favorite Content</h5>
+                    <p class="text-muted">Browse all the photos and videos you've liked</p>
+                    <a href="{{ url_for('favorites') }}" class="btn btn-danger hover-animate">
+                        <i class="bi bi-heart me-2"></i>View Favorites
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card shadow-sm mt-4 fade-in">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <a href="{{ url_for('album_create') }}" class="btn btn-outline-primary w-100 hover-animate">
+                    <i class="bi bi-folder-plus me-2"></i>Create Album
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('photo_upload') }}" class="btn btn-outline-success w-100 hover-animate">
+                    <i class="bi bi-image me-2"></i>Upload Photo
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('video_upload') }}" class="btn btn-outline-info w-100 hover-animate">
+                    <i class="bi bi-camera-video me-2"></i>Upload Video
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{{ url_for('albums_list') }}" class="btn btn-outline-secondary w-100 hover-animate">
+                    <i class="bi bi-collection me-2"></i>Browse Albums
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-animate {
+        transition: all 0.3s ease;
+        transform: translateY(0);
+    }
+    
+    .hover-animate:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+</style>
+{% endblock %}

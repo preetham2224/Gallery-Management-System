@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Upload Video • NCE Gallery{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Header -->
+            <div class="text-center mb-5">
+                <div class="bg-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 80px; height: 80px;">
+                    <i class="bi bi-camera-video text-white fs-2"></i>
+                </div>
+                <h2 class="fw-bold">Upload Video</h2>
+                <p class="text-muted">Share your video moments with the college community</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header bg-info text-white py-3">
+                    <h5 class="card-title mb-0">Video Upload</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <!-- Left Column - Form Fields -->
+                            <div class="col-md-6">
+                                <!-- Album Selection -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-folder me-2 text-info"></i>Select Album
+                                    </label>
+                                    {{ form.album(class="form-select form-select-lg py-3") }}
+                                    {% for e in form.album.errors %}
+                                    <div class="invalid-feedback d-block">{{ e }}</div>
+                                    {% endfor %}
+                                    <div class="form-text">Choose where to organize your video</div>
+                                </div>
+
+                                <!-- Video Upload -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-camera-video me-2 text-info"></i>Select Video
+                                    </label>
+                                    {{ form.video(class="form-control form-control-lg", accept="video/*") }}
+                                    {% for e in form.video.errors %}
+                                    <div class="invalid-feedback d-block">{{ e }}</div>
+                                    {% endfor %}
+                                    <div class="form-text">Supported formats: MP4, MOV, AVI, WebM</div>
+                                </div>
+
+                                <!-- Caption -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-chat-text me-2 text-info"></i>Caption
+                                    </label>
+                                    {{ form.caption(class="form-control", placeholder="Add a caption (optional)") }}
+                                </div>
+
+                                <!-- Tags -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">
+                                        <i class="bi bi-tags me-2 text-info"></i>Tags
+                                    </label>
+                                    {{ form.tags(class="form-control", placeholder="e.g., event, sports, cultural") }}
+                                    <div class="form-text">Separate tags with commas</div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column - Preview & Info -->
+                            <div class="col-md-6">
+                                <div class="upload-preview-container text-center p-4 border rounded-3 bg-light">
+                                    <i class="bi bi-camera-video text-muted display-4 mb-3 d-block"></i>
+                                    <p class="text-muted mb-3">Video information will appear here</p>
+                                    <div class="video-info mt-3" style="display: none;">
+                                        <p class="mb-1"><strong>Filename:</strong> <span id="fileName"></span></p>
+                                        <p class="mb-1"><strong>Size:</strong> <span id="fileSize"></span></p>
+                                        <p class="mb-0"><strong>Type:</strong> <span id="fileType"></span></p>
+                                    </div>
+                                </div>
+
+                                <!-- Upload Guidelines -->
+                                <div class="mt-4 p-3 bg-light rounded-3">
+                                    <h6 class="fw-semibold mb-3">
+                                        <i class="bi bi-info-circle text-info me-2"></i>Upload Guidelines
+                                    </h6>
+                                    <ul class="list-unstyled small mb-0">
+                                        <li class="mb-2"><i class="bi bi-check-circle text-info me-2"></i>Max file size: 10MB</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-info me-2"></i>Supported formats: MP4, MOV, AVI, WebM</li>
+                                        <li class="mb-2"><i class="bi bi-check-circle text-info me-2"></i>Optimal resolution: 1080p or lower</li>
+                                        <li><i class="bi bi-check-circle text-info me-2"></i>Ensure videos are appropriate for college community</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-info btn-lg px-4 text-white">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Upload Video
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Video file information display
+document.getElementById('video').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Display file information
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileType').textContent = file.type || 'Unknown';
+        
+        // Show video info and hide placeholder
+        document.querySelector('.video-info').style.display = 'block';
+        document.querySelector('.upload-preview-container p').style.display = 'none';
+        document.querySelector('.upload-preview-container i').style.display = 'none';
+    }
+});
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+
+<style>
+.upload-preview-container {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %}

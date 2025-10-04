@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Register • College Gallery{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h2>Create Account</h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">{{ form.full_name.label }} {{ form.full_name(class="form-control") }} {% for e in form.full_name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="mb-3">{{ form.email.label }} {{ form.email(class="form-control") }} {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="mb-3">{{ form.password.label }} {{ form.password(class="form-control") }} {% for e in form.password.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <div class="mb-3">{{ form.confirm.label }} {{ form.confirm(class="form-control") }} {% for e in form.confirm.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>
+      <button class="btn btn-primary">{{ form.submit.label.text }}</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
