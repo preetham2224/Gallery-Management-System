@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash
 from sqlalchemy import or_
 from config import Config
 from models import db, User, Album, Photo, Tag, Like, Comment, Video, VideoLike, VideoComment
-# Update this import line
 from forms import RegisterForm, LoginForm, AlbumForm, PhotoUploadForm, VideoUploadForm, EditProfileForm
 from utils import allowed_file, save_image, save_video, parse_tags, delete_image, delete_video
 from itertools import chain
@@ -27,8 +26,6 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # -------- Routes --------
-
     def get_album_items(album_id):
         photos = Photo.query.filter_by(album_id=album_id).order_by(Photo.created_at.desc()).all()
         videos = Video.query.filter_by(album_id=album_id).order_by(Video.created_at.desc()).all()
@@ -44,27 +41,19 @@ def create_app():
         )
        else:
            return Album.query.filter(Album.visibility == "public")
-
-    
     @app.route("/")
     def landing():
         if current_user.is_authenticated:
             return redirect(url_for("index"))
-        
-        # Create form instances
         login_form = LoginForm()
         register_form = RegisterForm()
-        
         return render_template("landing.html", login_form=login_form, register_form=register_form)
-    
     @app.route("/gallery")
     @login_required
     def index():
         q = request.args.get("q", "").strip()
         page = request.args.get("page", 1, type=int)
         per_page = 12
-
-        # Base queries depending on user auth
         if current_user.is_authenticated:
             photos_q = Photo.query.join(Album, Photo.album_id == Album.id).filter(
                 or_(Album.visibility == "public", Album.user_id == current_user.id)
@@ -75,8 +64,6 @@ def create_app():
         else:
             photos_q = Photo.query.join(Album, Photo.album_id == Album.id).filter(Album.visibility == "public")
             videos_q = Video.query.join(Album, Video.album_id == Album.id).filter(Album.visibility == "public")
-
-        # Search filter
         if q:
             photos_q = photos_q.outerjoin(Photo.tags).filter(
                 or_(
@@ -86,8 +73,6 @@ def create_app():
                 )
             )
             videos_q = videos_q.filter(Video.caption.ilike(f"%{q}%"))
-
-            # User search (e.g. q=user:3)
             if q.startswith("user:"):
                 try:
                     user_id = int(q.split(":")[1])
@@ -95,19 +80,13 @@ def create_app():
                     videos_q = videos_q.filter(Video.user_id == user_id)
                 except:
                     flash("Invalid user search format", "warning")
-
-        # Fetch all matching items
         photos = photos_q.all()
         videos = videos_q.all()
-
-        # Merge and sort
         items = sorted(
             chain(photos, videos),
             key=lambda x: x.created_at,
             reverse=True
         )
-
-        # Manual pagination
         total_items = len(items)
         total_pages = ceil(total_items / per_page) if total_items > 0 else 1
         start = (page - 1) * per_page
@@ -122,8 +101,6 @@ def create_app():
             total_pages=total_pages,
         )
 
-
-    # ---- Auth ----
     @app.route("/register", methods=["GET", "POST"])
     def register():
         if current_user.is_authenticated:
@@ -160,8 +137,6 @@ def create_app():
         flash("Logged out.", "info")
         return redirect(url_for("landing"))
 
-    # Add these new routes to your app.py
-
     @app.route('/profile')
     @login_required
     def profile():
@@ -170,8 +145,7 @@ def create_app():
         albums_count = Album.query.filter_by(user_id=user.id).count()
         photos_count = Photo.query.filter_by(user_id=user.id).count()
         videos_count = Video.query.filter_by(user_id=user.id).count()
-        
-        # Recent activity
+
         recent_photos = Photo.query.filter_by(user_id=user.id).order_by(Photo.created_at.desc()).limit(5).all()
         recent_videos = Video.query.filter_by(user_id=user.id).order_by(Video.created_at.desc()).limit(5).all()
         recent_activity = sorted(
@@ -196,8 +170,6 @@ def create_app():
         if form.validate_on_submit():
             current_user.full_name = form.full_name.data
             current_user.email = form.email.data
-            
-            # Handle password change if provided
             if form.password.data:
                 current_user.password_hash = generate_password_hash(form.password.data)
             
@@ -217,8 +189,6 @@ def create_app():
         """Albums shared with the current user"""
         page = request.args.get('page', 1, type=int)
         
-        # In a real implementation, you'd have a sharing model
-        # For now, we'll show public albums from other users
         shared_albums = Album.query.filter(
             Album.user_id != current_user.id,
             Album.visibility == 'public'
@@ -231,18 +201,12 @@ def create_app():
     def share_album(album_id):
         """Share album with specific users"""
         album = Album.query.get_or_404(album_id)
-        
-        # Check permission
         if album.user_id != current_user.id and not current_user.is_admin():
             abort(403)
         
         if request.method == 'POST':
-            # Handle sharing logic here
-            # This would typically involve creating share records
             flash('Album sharing settings updated', 'success')
             return redirect(url_for('album_detail', album_id=album.id))
-        
-        # Get all users for sharing (excluding current user)
         users = User.query.filter(User.id != current_user.id).all()
         
         return render_template('albums/share.html', album=album, users=users)
@@ -253,12 +217,8 @@ def create_app():
         """User's favorite items"""
         page = request.args.get('page', 1, type=int)
         per_page = 12
-        
-        # Get liked photos and videos
         liked_photos = Like.query.filter_by(user_id=current_user.id).all()
         liked_videos = VideoLike.query.filter_by(user_id=current_user.id).all()
-        
-        # Combine and sort
         favorite_items = []
         for like in liked_photos:
             favorite_items.append({
@@ -273,11 +233,7 @@ def create_app():
                 'item': like.video,
                 'liked_at': like.created_at
             })
-        
-        # Sort by like date
         favorite_items.sort(key=lambda x: x['liked_at'], reverse=True)
-        
-        # Pagination
         total_items = len(favorite_items)
         total_pages = ceil(total_items / per_page) if total_items > 0 else 1
         start = (page - 1) * per_page
@@ -296,12 +252,8 @@ def create_app():
         """User's uploaded content"""
         page = request.args.get('page', 1, type=int)
         per_page = 12
-        
-        # Get user's photos and videos
         user_photos = Photo.query.filter_by(user_id=current_user.id).order_by(Photo.created_at.desc()).all()
         user_videos = Video.query.filter_by(user_id=current_user.id).order_by(Video.created_at.desc()).all()
-        
-        # Combine and sort
         upload_items = []
         for photo in user_photos:
             upload_items.append({
@@ -316,11 +268,8 @@ def create_app():
                 'item': video,
                 'created_at': video.created_at
             })
-        
-        # Sort by creation date
         upload_items.sort(key=lambda x: x['created_at'], reverse=True)
-        
-        # Pagination
+
         total_items = len(upload_items)
         total_pages = ceil(total_items / per_page) if total_items > 0 else 1
         start = (page - 1) * per_page
@@ -340,11 +289,7 @@ def create_app():
         """User's albums page"""
         page = request.args.get('page', 1, type=int)
         per_page = 12
-        
-        # Get user's albums
         user_albums = Album.query.filter_by(user_id=current_user.id).order_by(Album.created_at.desc()).all()
-        
-        # Pagination
         total_items = len(user_albums)
         total_pages = ceil(total_items / per_page) if total_items > 0 else 1
         start = (page - 1) * per_page
@@ -356,35 +301,26 @@ def create_app():
                             page=page,
                             total_pages=total_pages,
                             total_albums=total_items)
-
-    # ---- Dashboards ----
     @app.route("/dashboard")
     @login_required
     def dashboard():
-    # Redirect based on role
         if current_user.is_admin():
             return redirect(url_for('admin_dashboard'))
         else:
             return redirect(url_for('user_dashboard'))
-
     @app.route("/dashboard/admin")
     @login_required
     def admin_dashboard():
         if not current_user.is_admin():
             abort(403)
-
-        # Get stats for admin dashboard
         total_users = User.query.count()
         total_albums = Album.query.count()
         total_photos = Photo.query.count()
         recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
-    
-        # Get storage statistics (approximate)
         import os
         from config import Config
         upload_size = 0
         thumb_size = 0
-    
         try:
             for filename in os.listdir(Config.UPLOAD_FOLDER):
                 filepath = os.path.join(Config.UPLOAD_FOLDER, filename)
@@ -411,12 +347,8 @@ def create_app():
     @login_required
     def user_dashboard():
         my_albums = Album.query.filter_by(user_id=current_user.id).order_by(Album.created_at.desc()).all()
-        
-        # Get recent uploads (last 9 items)
         recent_photos = Photo.query.filter_by(user_id=current_user.id).order_by(Photo.created_at.desc()).limit(6).all()
         recent_videos = Video.query.filter_by(user_id=current_user.id).order_by(Video.created_at.desc()).limit(3).all()
-        
-        # Format recent uploads for template
         recent_uploads = []
         for photo in recent_photos:
             recent_uploads.append({
@@ -429,18 +361,13 @@ def create_app():
             recent_uploads.append({
                 'type': 'video', 
                 'id': video.id,
-                'thumb': ''  # Videos don't have thumbs                
+                'thumb': ''        
             })
-        
-        # Get user statistics
         album_count = len(my_albums)
         photo_count = Photo.query.filter_by(user_id=current_user.id).count()
         video_count = Video.query.filter_by(user_id=current_user.id).count()
-        
-        # Get recently liked items
         recent_photo_likes = Like.query.filter_by(user_id=current_user.id).order_by(Like.created_at.desc()).limit(6).all()
         recent_video_likes = VideoLike.query.filter_by(user_id=current_user.id).order_by(VideoLike.created_at.desc()).limit(3).all()
-        
         liked_items = []
         for like in recent_photo_likes:
             liked_items.append({
@@ -462,7 +389,6 @@ def create_app():
                             photo_count=photo_count,
                             video_count=video_count,
                             liked_items=liked_items)
-    # ---- Albums ----
     @app.route("/albums")
     def albums_list():
         page = request.args.get("page", 1, type=int)
@@ -502,24 +428,18 @@ def create_app():
 
         album = Album.query.get_or_404(album_id)
 
-        # Fetch all photos and videos in this album
         photos = Photo.query.filter(Photo.album_id == album.id).all()
         videos = Video.query.filter(Video.album_id == album.id).all()
-
-        # Merge and sort (newest first)
         items = sorted(
             chain(photos, videos),
             key=lambda x: x.created_at,
             reverse=True
         )
-
-        # Manual pagination
         total_items = len(items)
         total_pages = ceil(total_items / per_page) if total_items > 0 else 1
         start = (page - 1) * per_page
         end = start + per_page
         items = items[start:end]
-
         return render_template(
             "albums/detail.html",
             album=album,
@@ -536,12 +456,8 @@ def create_app():
         if not (current_user.is_admin() or album.user_id == current_user.id):
             abort(403)
         
-        # Manually delete photo_tags relationships first
         for photo in album.photos:
-            # Clear the many-to-many relationship
             photo.tags.clear()
-        
-        # Now delete photos and videos
         for photo in album.photos:
             delete_image(photo.filename)
             db.session.delete(photo)
@@ -549,16 +465,11 @@ def create_app():
         for video in album.videos:
             delete_video(video.filename)
             db.session.delete(video)
-        
-        # Delete the album
         db.session.delete(album)
         db.session.commit()
         
         flash("Album and all its contents deleted successfully.", "success")
         return redirect(url_for('albums_list'))
-
-
-    # ---- Photos ----
     @app.route("/photos/upload", methods=["GET", "POST"])
     @login_required
     def photo_upload():
@@ -572,7 +483,6 @@ def create_app():
             if not allowed_file(file.filename):
                 flash("Unsupported file type.", "danger")
                 return render_template("photos/upload.html", form=form)
-
             saved_filename, original_name = save_image(file)
             photo = Photo(
                 filename=saved_filename,
@@ -582,8 +492,6 @@ def create_app():
                 user_id=current_user.id,
             )
             db.session.add(photo)
-
-            # Tags
             for tag_text in parse_tags(form.tags.data):
                 tag = Tag.query.filter_by(name=tag_text).first()
                 if not tag:
@@ -596,40 +504,27 @@ def create_app():
             return redirect(url_for("album_detail", album_id=form.album.data))
         return render_template("photos/upload.html", form=form)
 
-
     @app.route("/photos/<int:photo_id>")
     def photo_detail(photo_id):
         photo = Photo.query.get_or_404(photo_id)
-        
-        # Check if current user liked this photo
         liked = False
         if current_user.is_authenticated:
             liked = Like.query.filter_by(user_id=current_user.id, photo_id=photo.id).first() is not None
-
-        # Get ALL photos and videos ordered by created date (across all albums)
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
         all_videos = Video.query.order_by(Video.created_at.desc()).all()
-        
-        # Combine and sort all items by creation date
         all_items = sorted(
             chain(all_photos, all_videos),
             key=lambda x: x.created_at,
             reverse=True
         )
-        
-        # Find current item index
         current_index = None
         for i, item in enumerate(all_items):
             if (hasattr(item, 'id') and item.id == photo_id and 
                 item.__class__.__name__ == 'Photo'):
                 current_index = i
                 break
-        
-        # Get previous and next items (navigation across all albums)
         prev_item = all_items[current_index - 1] if current_index is not None and current_index > 0 else None
         next_item = all_items[current_index + 1] if current_index is not None and current_index < len(all_items) - 1 else None
-
-        # Comments for this photo
         comments = Comment.query.filter_by(photo_id=photo.id).order_by(Comment.created_at.desc()).all()
 
         return render_template(
@@ -649,12 +544,10 @@ def create_app():
         existing_like = Like.query.filter_by(user_id=current_user.id, photo_id=photo.id).first()
         
         if existing_like:
-            # Unlike if already liked
             db.session.delete(existing_like)
             db.session.commit()
             flash("Photo unliked.", "info")
         else:
-            # Like if not already liked
             like = Like(user_id=current_user.id, photo_id=photo.id)
             db.session.add(like)
             db.session.commit()
@@ -695,23 +588,16 @@ def create_app():
     def delete_photo(photo_id):
         photo = Photo.query.get_or_404(photo_id)
         
-        # Check permissions
         if not (current_user.is_admin() or photo.user_id == current_user.id):
             abort(403)
         
         album_id = photo.album_id
-        
-        # Delete the image files
         delete_image(photo.filename)
-        
-        # Delete from database
         db.session.delete(photo)
         db.session.commit()
         
         flash("Photo deleted successfully.", "success")
         return redirect(url_for('album_detail', album_id=album_id))
-
-    # ------videos------
     
     @app.route("/videos/upload", methods=["GET", "POST"])
     @login_required
@@ -736,16 +622,11 @@ def create_app():
                 user_id=current_user.id,
             )
             db.session.add(video)
-
-            # Tags (optional, same as photos)
             for tag_text in parse_tags(form.tags.data):
                 tag = Tag.query.filter_by(name=tag_text).first()
                 if not tag:
                     tag = Tag(name=tag_text)
                     db.session.add(tag)
-                # if you want videos also tagged, add a many-to-many
-                # else skip
-
             db.session.commit()
             flash("Video uploaded.", "success")
             return redirect(url_for("album_detail", album_id=form.album.data))
@@ -755,36 +636,26 @@ def create_app():
     @app.route("/videos/<int:video_id>")
     def video_detail(video_id):
         video = Video.query.get_or_404(video_id)
-        
-        # Check if current user liked this video
         liked = False
         if current_user.is_authenticated:
             liked = VideoLike.query.filter_by(user_id=current_user.id, video_id=video.id).first() is not None
 
-        # Get ALL photos and videos ordered by created date (across all albums)
         all_photos = Photo.query.order_by(Photo.created_at.desc()).all()
         all_videos = Video.query.order_by(Video.created_at.desc()).all()
         
-        # Combine and sort all items by creation date
         all_items = sorted(
             chain(all_photos, all_videos),
             key=lambda x: x.created_at,
             reverse=True
         )
-        
-        # Find current item index
         current_index = None
         for i, item in enumerate(all_items):
             if (hasattr(item, 'id') and item.id == video_id and 
                 item.__class__.__name__ == 'Video'):
                 current_index = i
                 break
-        
-        # Get previous and next items (navigation across all albums)
         prev_item = all_items[current_index - 1] if current_index is not None and current_index > 0 else None
         next_item = all_items[current_index + 1] if current_index is not None and current_index < len(all_items) - 1 else None
-
-        # Comments for this video
         comments = VideoComment.query.filter_by(video_id=video.id).order_by(VideoComment.created_at.desc()).all()
 
         return render_template(
@@ -796,9 +667,7 @@ def create_app():
             next_item=next_item,
             all_items=all_items
         )
-        
-    
-    # Updated like_video route with toggle functionality
+   
     @app.post("/videos/<int:video_id>/like")
     @login_required
     def like_video(video_id):
@@ -806,12 +675,10 @@ def create_app():
         existing_like = VideoLike.query.filter_by(user_id=current_user.id, video_id=video.id).first()
         
         if existing_like:
-            # Unlike if already liked
             db.session.delete(existing_like)
             db.session.commit()
             flash("Video unliked.", "info")
         else:
-            # Like if not already liked
             like = VideoLike(user_id=current_user.id, video_id=video.id)
             db.session.add(like)
             db.session.commit()
@@ -832,8 +699,6 @@ def create_app():
             flash("You haven't liked this video.", "warning")
         return redirect(url_for('video_detail', video_id=video.id))
 
-    # Add this import if you created a separate VideoComment model
-# from models import VideoComment
 
     @app.post("/videos/<int:video_id>/comment")
     @login_required
@@ -867,23 +732,15 @@ def create_app():
     def delete_video_route(video_id):
         video = Video.query.get_or_404(video_id)
         
-        # Check permissions
         if not (current_user.is_admin() or video.user_id == current_user.id):
             abort(403)
         
         album_id = video.album_id
-        
-        # Delete the video file
         delete_video(video.filename)
-        
-        # Delete from database
         db.session.delete(video)
         db.session.commit()
-        
         flash("Video deleted successfully.", "success")
         return redirect(url_for('album_detail', album_id=album_id))
-
-    # ---- Admin ----
     def admin_required():
         if not current_user.is_authenticated or not current_user.is_admin():
             abort(403)
@@ -916,8 +773,6 @@ def create_app():
     def admin_settings():
         admin_required()
         return render_template("admin/settings.html")
-
-    # --- Error handlers ---
     @app.errorhandler(403)
     def forbidden(e):
         return render_template("base.html", content="403 Forbidden"), 403
@@ -932,11 +787,9 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    # Flask 3 removed before_first_request; do one-time DB create here.
     with app.app_context():
         from models import db, User
         db.create_all()
-        # Seed an admin if none exists
         if not User.query.filter_by(email="admin@college.edu").first():
             from werkzeug.security import generate_password_hash
             admin = User(
@@ -949,3 +802,4 @@ if __name__ == "__main__":
             db.session.commit()
             print("Created default admin: admin@college.edu / Admin@123")
     app.run(debug=True)
+
